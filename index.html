@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Special Gift</title>
+    <title>A Special Surprise</title>
     <style>
         body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f5f5f5; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
         
@@ -50,7 +50,7 @@
 
 <div class="container">
     <div id="reward-content" class="hidden-reveal">
-        <img src="image_0.png" alt="Longines HydroConquest" class="watch-image">
+        <img src="image_0.jpg" alt="Longines HydroConquest" class="watch-image">
         
         <div class="text-box">
             <h2>Your Timepiece</h2>
@@ -69,4 +69,73 @@
     const reward = document.getElementById('reward-content');
     const btn = document.getElementById('action-btn');
     let isActive = false;
-    let
+    let hasStarted = false;
+
+    function setup() {
+        // Solid Metallic Silver
+        ctx.fillStyle = '#D3D3D3'; 
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Vertical Brushed Steel Texture
+        ctx.strokeStyle = '#BDBDBD';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < canvas.width; i += 3) {
+            ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+        }
+
+        // Instructional Text
+        ctx.fillStyle = '#777';
+        ctx.font = '12px Helvetica';
+        ctx.textAlign = 'center';
+        ctx.fillText('SCRATCH TO REVEAL', 180, 275);
+    }
+
+    function handleScratch(e) {
+        if (!isActive) return;
+
+        // Reveal background content on first scratch
+        if (!hasStarted) {
+            hasStarted = true;
+            reward.style.opacity = "1";
+        }
+
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+        const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
+
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.arc(x, y, 35, 0, Math.PI * 2);
+        ctx.fill();
+
+        validateScratchProgress();
+    }
+
+    function validateScratchProgress() {
+        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        let clear = 0;
+        // Sample pixels for efficiency
+        for (let i = 3; i < data.length; i += 400) {
+            if (data[i] === 0) clear++;
+        }
+        
+        // Once 12% is cleared, activate the button and allow clicks to pass through
+        if (clear / ((canvas.width * canvas.height) / 400) > 12) {
+            canvas.style.pointerEvents = 'none';
+            btn.style.pointerEvents = 'auto';
+            btn.style.opacity = "1";
+        }
+    }
+
+    // Event Listeners
+    canvas.addEventListener('mousedown', () => isActive = true);
+    window.addEventListener('mouseup', () => isActive = false);
+    canvas.addEventListener('mousemove', handleScratch);
+    canvas.addEventListener('touchstart', (e) => { isActive = true; handleScratch(e); });
+    canvas.addEventListener('touchend', () => isActive = false);
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); handleScratch(e); }, { passive: false });
+
+    setup();
+</script>
+</body>
+</html>
