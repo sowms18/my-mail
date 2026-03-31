@@ -1,0 +1,12 @@
+# Define the job name exactly as 'pages' for GitLab to recognize it
+pages:
+  stage: deploy
+  script:
+    - mkdir .public
+    - cp -r * .public
+    - mv .public public
+  artifacts:
+    paths:
+      - public
+  only:
+    - main # This ensures it only deploys when you update the main branch
