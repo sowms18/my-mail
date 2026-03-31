@@ -3,92 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Special Gift for You!</title>
+    <title>A Surprise for You!</title>
     <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-            font-family: 'Arial', sans-serif;
+        body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f0f0; font-family: Arial, sans-serif; }
+        .container { position: relative; width: 350px; height: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border-radius: 15px; overflow: hidden; background-color: #002366; border: 3px solid #D4AF37; }
+        
+        /* The Watch Content */
+        .watch-reveal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+        .watch-image { width: 100%; max-width: 250px; height: auto; border-radius: 10px; margin-bottom: 20px; }
+        
+        .btn-select { 
+            position: relative; z-index: 20; /* Keep button above everything */
+            padding: 15px 25px; background-color: #D4AF37; color: #002366; 
+            text-decoration: none; font-weight: bold; border-radius: 5px; 
+            text-transform: uppercase; display: inline-block;
         }
 
-        .container {
-            position: relative;
-            width: 350px;
-            height: 450px; /* Taller to fit the watch and button */
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            border-radius: 15px;
-            overflow: hidden;
-            background-color: #002366; /* Matching Navy Blue */
-            border: 3px solid #D4AF37; /* Gold Frame */
-        }
-
-        /* The Watch Background */
-        .watch-reveal {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-top: 20px;
-        }
-
-        .watch-image {
-            width: 280px;
-            height: auto;
-            border-radius: 10px;
-        }
-
-        .gift-info {
-            color: #D4AF37;
-            text-align: center;
-            margin-top: 15px;
-        }
-
-        /* The Selection Link/Button */
-        .btn-select {
-            margin-top: 20px;
-            padding: 12px 25px;
-            background-color: #D4AF37; /* Gold */
-            color: #002366; /* Navy Blue Text */
-            text-decoration: none;
-            font-weight: bold;
-            border-radius: 5px;
-            text-transform: uppercase;
-            font-size: 14px;
-            transition: 0.3s;
-        }
-
-        /* The Opaque Scratch Canvas */
-        #scratch {
-            position: absolute;
-            top: 0;
-            left: 0;
-            cursor: crosshair;
-            touch-action: none;
-            z-index: 10;
-        }
+        /* The Scratch Layer */
+        #scratch { position: absolute; top: 0; left: 0; cursor: crosshair; touch-action: none; z-index: 10; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="watch-reveal">
-        <img src="http://googleusercontent.com/image_collection/image_retrieval/16695805760037738934_0" alt="Longines Watch" class="watch-image">
-        <div class="gift-info">
+        <img src="https://www.longines.com/media/catalog/product/w/a/watch-hydroconquest-l3-841-4-96-6-1707314545.png" alt="Longines Watch" class="watch-image">
+        <div style="color: #D4AF37; text-align: center; margin-bottom: 20px;">
             <h2 style="margin:0;">It's Yours!</h2>
-            <p>Longines HydroConquest</p>
-            <a href="https://www.longines.com/en-us/p/watch-hydroconquest-l3-841-4-96-6" class="btn-select" target="_blank">Choose Size & Color</a>
+            <p>HydroConquest 41mm</p>
         </div>
+        <a href="https://www.longines.com/en-us/p/watch-hydroconquest-l3-841-4-96-6" class="btn-select" target="_blank">Choose Size & Color</a>
     </div>
-
-    <canvas id="scratch" width="350" height="450"></canvas>
+    <canvas id="scratch" width="350" height="500"></canvas>
 </div>
 
 <script>
@@ -97,47 +43,50 @@
     let isDrawing = false;
 
     function init() {
-        // Solid Silver Opaque Layer
-        ctx.fillStyle = '#C0C0C0';
+        ctx.fillStyle = '#C0C0C0'; // Solid Silver
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Add Metallic Texture
-        ctx.strokeStyle = '#A8A8A8';
-        for (let i = 0; i < canvas.width; i += 5) {
-            ctx.beginPath();
-            ctx.moveTo(i, 0);
-            ctx.lineTo(i, canvas.height);
-            ctx.stroke();
-        }
-
-        // Instructions
         ctx.fillStyle = '#444';
         ctx.font = 'bold 20px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('SCRATCH TO REVEAL', 175, 225);
+        ctx.fillText('SCRATCH TO REVEAL', 175, 250);
     }
 
     function scratch(e) {
         if (!isDrawing) return;
         const rect = canvas.getBoundingClientRect();
-        const x = (e.clientX || e.touches[0].clientX) - rect.left;
-        const y = (e.clientY || e.touches[0].clientY) - rect.top;
+        const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+        const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
 
         ctx.globalCompositeOperation = 'destination-out';
         ctx.beginPath();
-        ctx.arc(x, y, 30, 0, Math.PI * 2);
+        ctx.arc(x, y, 35, 0, Math.PI * 2);
         ctx.fill();
+
+        // TECHNICAL FIX: After some scratching, allow clicks to pass to the button
+        handleTransparency();
+    }
+
+    function handleTransparency() {
+        // Simple logic: if they scratch enough, the canvas ignores touches so the button works
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let transparentPixels = 0;
+        for (let i = 3; i < imageData.data.length; i += 4) {
+            if (imageData.data[i] === 0) transparentPixels++;
+        }
+        // If 20% is scratched, allow clicking the button through the canvas
+        if (transparentPixels / (canvas.width * canvas.height) > 0.20) {
+            canvas.style.pointerEvents = 'none';
+        }
     }
 
     canvas.addEventListener('mousedown', () => isDrawing = true);
-    canvas.addEventListener('mouseup', () => isDrawing = false);
+    window.addEventListener('mouseup', () => isDrawing = false);
     canvas.addEventListener('mousemove', scratch);
-    canvas.addEventListener('touchstart', () => isDrawing = true);
+    canvas.addEventListener('touchstart', (e) => { isDrawing = true; scratch(e); });
     canvas.addEventListener('touchend', () => isDrawing = false);
     canvas.addEventListener('touchmove', (e) => { e.preventDefault(); scratch(e); }, { passive: false });
 
     init();
 </script>
-
 </body>
 </html>
