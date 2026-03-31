@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Surprise for You!</title>
+    <title>A Special Gift for You!</title>
     <style>
         body {
             display: flex;
@@ -11,70 +11,84 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f4f4f4;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f0f0;
+            font-family: 'Arial', sans-serif;
         }
 
         .container {
             position: relative;
             width: 350px;
-            height: 200px;
-            user-select: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            border-radius: 12px;
+            height: 450px; /* Taller to fit the watch and button */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-radius: 15px;
             overflow: hidden;
-            border: 4px solid #D4AF37; /* Gold Border */
+            background-color: #002366; /* Matching Navy Blue */
+            border: 3px solid #D4AF37; /* Gold Frame */
         }
 
-        /* The "Gift Box" Underneath (Blue & Gold) */
-        .gift-card {
+        /* The Watch Background */
+        .watch-reveal {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #002366; /* Royal Blue */
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            padding-top: 20px;
+        }
+
+        .watch-image {
+            width: 280px;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .gift-info {
+            color: #D4AF37;
             text-align: center;
+            margin-top: 15px;
         }
 
-        .gift-card h2 {
-            color: #D4AF37; /* Gold Text */
-            margin: 0;
-            font-size: 1.2rem;
-            text-transform: uppercase;
-        }
-
-        .gift-card .code {
-            font-size: 2rem;
+        /* The Selection Link/Button */
+        .btn-select {
+            margin-top: 20px;
+            padding: 12px 25px;
+            background-color: #D4AF37; /* Gold */
+            color: #002366; /* Navy Blue Text */
+            text-decoration: none;
             font-weight: bold;
-            color: #FFFFFF;
-            letter-spacing: 2px;
-            margin-top: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            border-radius: 5px;
+            text-transform: uppercase;
+            font-size: 14px;
+            transition: 0.3s;
         }
 
-        /* The Opaque Scratch Layer (Silver) */
+        /* The Opaque Scratch Canvas */
         #scratch {
             position: absolute;
             top: 0;
             left: 0;
             cursor: crosshair;
             touch-action: none;
+            z-index: 10;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="gift-card">
-        <h2>Your Digital Gift</h2>
-        <div class="code">GOLD-777-WIN</div>
+    <div class="watch-reveal">
+        <img src="http://googleusercontent.com/image_collection/image_retrieval/16695805760037738934_0" alt="Longines Watch" class="watch-image">
+        <div class="gift-info">
+            <h2 style="margin:0;">It's Yours!</h2>
+            <p>Longines HydroConquest</p>
+            <a href="https://www.longines.com/en-us/p/watch-hydroconquest-l3-841-4-96-6" class="btn-select" target="_blank">Choose Size & Color</a>
+        </div>
     </div>
-    <canvas id="scratch" width="350" height="200"></canvas>
+
+    <canvas id="scratch" width="350" height="450"></canvas>
 </div>
 
 <script>
@@ -82,53 +96,45 @@
     const ctx = canvas.getContext('2d');
     let isDrawing = false;
 
-    // 1. Create the Opaque Silver Foil
     function init() {
-        // Fill with solid Silver
-        ctx.fillStyle = '#C0C0C0'; 
+        // Solid Silver Opaque Layer
+        ctx.fillStyle = '#C0C0C0';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Add a "Brushed Metal" texture effect
-        ctx.strokeStyle = '#A0A0A0';
-        for (let i = 0; i < canvas.width; i += 4) {
+        // Add Metallic Texture
+        ctx.strokeStyle = '#A8A8A8';
+        for (let i = 0; i < canvas.width; i += 5) {
             ctx.beginPath();
             ctx.moveTo(i, 0);
             ctx.lineTo(i, canvas.height);
             ctx.stroke();
         }
 
-        // Add "Scratch Here" instruction
-        ctx.fillStyle = '#666';
-        ctx.font = 'bold 18px Arial';
+        // Instructions
+        ctx.fillStyle = '#444';
+        ctx.font = 'bold 20px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('SCRATCH TO REVEAL', 175, 105);
+        ctx.fillText('SCRATCH TO REVEAL', 175, 225);
     }
 
-    // 2. Scratch Logic
     function scratch(e) {
         if (!isDrawing) return;
-        
         const rect = canvas.getBoundingClientRect();
         const x = (e.clientX || e.touches[0].clientX) - rect.left;
         const y = (e.clientY || e.touches[0].clientY) - rect.top;
 
         ctx.globalCompositeOperation = 'destination-out';
         ctx.beginPath();
-        ctx.arc(x, y, 20, 0, Math.PI * 2);
+        ctx.arc(x, y, 30, 0, Math.PI * 2);
         ctx.fill();
     }
 
     canvas.addEventListener('mousedown', () => isDrawing = true);
     canvas.addEventListener('mouseup', () => isDrawing = false);
     canvas.addEventListener('mousemove', scratch);
-    
-    // Mobile Support
     canvas.addEventListener('touchstart', () => isDrawing = true);
     canvas.addEventListener('touchend', () => isDrawing = false);
-    canvas.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-        scratch(e);
-    }, { passive: false });
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); scratch(e); }, { passive: false });
 
     init();
 </script>
