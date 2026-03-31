@@ -3,123 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Special Surprise</title>
+    <title>A Special Gift</title>
     <style>
-        body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #e0e0e0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+        body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f5f5f5; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
         
-        /* New Neutral/Premium Color Palette */
         .container { 
-            position: relative; width: 350px; height: 550px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2); border-radius: 8px; 
-            overflow: hidden; background-color: #ffffff; /* Clean White/Silver Base */
-            border: 1px solid #cccccc; 
+            position: relative; width: 360px; height: 550px; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1); border-radius: 4px; 
+            overflow: hidden; background-color: #ffffff; 
+            border: 1px solid #eeeeee; 
         }
         
-        .watch-reveal { 
+        /* The Secret Content (Hidden initially) */
+        .hidden-reveal { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             display: flex; flex-direction: column; align-items: center; 
-            justify-content: center; padding: 30px; box-sizing: border-box; 
+            justify-content: center; padding: 20px; box-sizing: border-box; 
+            opacity: 0; /* Fully invisible at start */
+            transition: opacity 0.8s ease-in; 
         }
 
-        /* Watch Image Styling */
         .watch-image { 
-            width: 100%; max-width: 280px; height: auto; 
-            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1));
-            margin-bottom: 20px;
+            width: 100%; max-width: 300px; height: auto; 
+            margin-bottom: 25px;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.08));
         }
         
-        .text-container { text-align: center; color: #333; margin-bottom: 30px; }
-        .text-container h2 { margin: 0; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; }
-        .text-container p { color: #888; font-size: 0.9rem; margin-top: 5px; }
+        .text-box { text-align: center; color: #1a1a1a; margin-bottom: 25px; }
+        .text-box h2 { margin: 0; font-weight: 300; letter-spacing: 3px; text-transform: uppercase; font-size: 1.1rem; }
+        .text-box p { color: #999; font-size: 0.85rem; margin-top: 8px; letter-spacing: 1px; }
 
-        /* Sleek Black/Silver Button */
+        /* Minimalist Steel Button */
         .btn-select { 
-            position: relative; z-index: 20; 
-            padding: 15px 40px; background-color: #000; color: #fff; 
-            text-decoration: none; font-weight: bold; border-radius: 2px; 
-            text-transform: uppercase; font-size: 12px; letter-spacing: 1px;
-            transition: background 0.3s;
+            padding: 16px 45px; background-color: #000; color: #fff; 
+            text-decoration: none; font-weight: 500; border-radius: 0; 
+            text-transform: uppercase; font-size: 11px; letter-spacing: 2px;
+            pointer-events: none; /* Disabled until scratched */
+            transition: all 0.3s;
         }
 
-        #scratch { position: absolute; top: 0; left: 0; cursor: crosshair; touch-action: none; z-index: 10; }
+        /* The Silver Foil Layer */
+        #scratch-layer { position: absolute; top: 0; left: 0; cursor: crosshair; touch-action: none; z-index: 10; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="watch-reveal">
-        <img src="https://static.longines.com/media/catalog/product/w/a/watch-hydroconquest-l3-841-4-96-6-1707314545.png" 
-             alt="Longines HydroConquest" 
-             class="watch-image"
-             onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=400';">
+    <div id="reward-content" class="hidden-reveal">
+        <img src="image_0.png" alt="Longines HydroConquest" class="watch-image">
         
-        <div class="text-container">
-            <h2>Your New Timepiece</h2>
-            <p>Longines HydroConquest • 41mm</p>
+        <div class="text-box">
+            <h2>Your Timepiece</h2>
+            <p>Longines HydroConquest Blue Dial</p>
         </div>
 
-        <a href="https://www.longines.com/en-us/p/watch-hydroconquest-l3-841-4-96-6" class="btn-select" target="_blank">Select Size & Color</a>
+        <a id="action-btn" href="https://www.longines.com/en-us/p/watch-hydroconquest-l3-841-4-96-6" class="btn-select" target="_blank">Select Size & Color</a>
     </div>
-    <canvas id="scratch" width="350" height="550"></canvas>
+
+    <canvas id="scratch-layer" width="360" height="550"></canvas>
 </div>
 
 <script>
-    const canvas = document.getElementById('scratch');
+    const canvas = document.getElementById('scratch-layer');
     const ctx = canvas.getContext('2d');
-    let isDrawing = false;
-
-    function init() {
-        // Solid Opaque Silver Foil
-        ctx.fillStyle = '#DCDCDC'; 
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Fine Grain Metallic Texture
-        ctx.strokeStyle = '#BDBDBD';
-        for (let i = 0; i < canvas.width; i += 3) {
-            ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
-        }
-
-        ctx.fillStyle = '#666';
-        ctx.font = '14px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('SCRATCH TO REVEAL GIFT', 175, 275);
-    }
-
-    function scratch(e) {
-        if (!isDrawing) return;
-        const rect = canvas.getBoundingClientRect();
-        const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
-        const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
-
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.beginPath();
-        ctx.arc(x, y, 35, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Check if enough is scratched to enable the button
-        checkScratchAmount();
-    }
-
-    function checkScratchAmount() {
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        let transparent = 0;
-        for (let i = 3; i < imageData.data.length; i += 400) { // Sampling for performance
-            if (imageData.data[i] === 0) transparent++;
-        }
-        // Once 15% is clear, make the canvas "pass-through"
-        if (transparent / ( (canvas.width * canvas.height) / 100 ) > 15) {
-            canvas.style.pointerEvents = 'none';
-        }
-    }
-
-    canvas.addEventListener('mousedown', () => isDrawing = true);
-    window.addEventListener('mouseup', () => isDrawing = false);
-    canvas.addEventListener('mousemove', scratch);
-    canvas.addEventListener('touchstart', (e) => { isDrawing = true; scratch(e); });
-    canvas.addEventListener('touchend', () => isDrawing = false);
-    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); scratch(e); }, { passive: false });
-
-    init();
-</script>
-</body>
-</html>
+    const reward = document.getElementById('reward-content');
+    const btn = document.getElementById('action-btn');
+    let isActive = false;
+    let
