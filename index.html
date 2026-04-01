@@ -5,104 +5,135 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A Special Surprise</title>
     <style>
-        body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f0f0; font-family: 'Helvetica Neue', Arial, sans-serif; }
+        body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f0f0; font-family: 'Helvetica Neue', Arial, sans-serif; overflow: hidden; }
+        .container { position: relative; width: 360px; height: 580px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); border-radius: 12px; overflow: hidden; background-color: #fff; }
         
-        .container { 
-            position: relative; width: 360px; height: 580px; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.15); border-radius: 8px; 
-            overflow: hidden; background-color: #ffffff; 
-        }
-        
+        /* The Reward Layer */
         .reveal-content { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            padding: 20px; box-sizing: border-box; 
-            z-index: 10; opacity: 0; transition: opacity 0.6s ease;
-            pointer-events: none; 
+            padding: 20px; box-sizing: border-box; z-index: 1; opacity: 0; transition: opacity 1s ease;
         }
         
-        .watch-image { width: 100%; max-width: 280px; height: auto; margin-bottom: 25px; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1)); }
+        .watch-image { width: 100%; max-width: 280px; height: auto; margin-bottom: 25px; filter: drop-shadow(0 15px 30px rgba(0,0,0,0.15)); }
         .text-box { text-align: center; color: #1a1a1a; margin-bottom: 25px; }
         .text-box h2 { margin: 0; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; font-size: 1.1rem; }
         
+        /* The Button - Hidden until enough scratching is done */
         .btn-select { 
             padding: 16px 45px; background-color: #000; color: #fff; 
             text-decoration: none; font-weight: bold; text-transform: uppercase; 
-            font-size: 11px; letter-spacing: 2px; display: inline-block; cursor: pointer;
-            border: 1px solid #333;
+            font-size: 11px; letter-spacing: 2px; display: inline-block;
+            opacity: 0; transform: translateY(20px); transition: all 0.8s ease;
+            pointer-events: none;
         }
+        .btn-ready { opacity: 1; transform: translateY(0); pointer-events: auto; }
 
-        #scratch-layer { 
-            position: absolute; top: 0; left: 0; cursor: crosshair; 
-            touch-action: none; z-index: 20; 
-            /* Subtle CSS shine effect on the canvas element itself */
-            background: linear-gradient(135deg, #cfd8dc 0%, #eceff1 50%, #b0bec5 100%);
-        }
+        #scratch-layer { position: absolute; top: 0; left: 0; cursor: crosshair; touch-action: none; z-index: 10; }
+        
+        /* Sparkle effect on scratch */
+        .sparkle { position: absolute; width: 5px; height: 5px; background: white; border-radius: 50%; pointer-events: none; z-index: 15; }
     </style>
 </head>
 <body>
-<div class="container">
+<div class="container" id="card">
     <div id="main-content" class="reveal-content">
         <img src="image_0.jpg" alt="Longines" class="watch-image">
         <div class="text-box"><h2>To Moments Beyond Time</h2></div>
-        <a href="https://www.longines.com/en-us/p/watch-hydroconquest-l3-841-4-96-6" target="_blank" class="btn-select">SELECT SIZE</a>
+        <a href="https://www.longines.com/en-us/p/watch-hydroconquest-l3-841-4-96-6" target="_blank" class="btn-select" id="order-btn">SELECT SIZE</a>
     </div>
     <canvas id="scratch-layer" width="360" height="580"></canvas>
 </div>
 
 <script>
     const canvas = document.getElementById('scratch-layer');
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
     const content = document.getElementById('main-content');
+    const btn = document.getElementById('order-btn');
+    const container = document.getElementById('card');
+    
     let isActive = false;
     let revealed = false;
 
     function init() {
-        // Create a Shining Silver Gradient
+        // Premium Silver Gradient
         const grad = ctx.createLinearGradient(0, 0, 360, 580);
-        grad.addColorStop(0, '#ADB5BD');   // Darker silver
-        grad.addColorStop(0.3, '#E9ECEF'); // Highlight shine
-        grad.addColorStop(0.5, '#DEE2E6'); // Mid silver
-        grad.addColorStop(0.7, '#F8F9FA'); // Bright highlight
-        grad.addColorStop(1, '#6C757D');   // Depth shadow
+        grad.addColorStop(0, '#ADB5BD');
+        grad.addColorStop(0.2, '#F8F9FA');
+        grad.addColorStop(0.5, '#DEE2E6');
+        grad.addColorStop(0.8, '#E9ECEF');
+        grad.addColorStop(1, '#6C757D');
         
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, 360, 580);
 
-        // Add "Brushed Metal" texture lines
-        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-        ctx.lineWidth = 1;
-        for (let i = 0; i < 600; i += 4) {
-            ctx.beginPath();
-            ctx.moveTo(0, i);
-            ctx.lineTo(360, i - 100);
-            ctx.stroke();
+        // Brushed texture
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        for (let i = 0; i < 600; i += 2) {
+            ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(360, i - 50); ctx.stroke();
         }
 
         ctx.fillStyle = '#495057';
         ctx.font = 'bold 14px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('SCRATCH TO REVEAL', 180, 290);
+        ctx.fillText('SCRATCH TO REVEAL SURPRISE', 180, 290);
+    }
+
+    function createSparkle(x, y) {
+        const s = document.createElement('div');
+        s.className = 'sparkle';
+        s.style.left = x + 'px';
+        s.style.top = y + 'px';
+        container.appendChild(s);
+        setTimeout(() => s.remove(), 500);
     }
 
     function scratch(e) {
         if (!isActive) return;
 
-        if (!revealed) {
-            content.style.opacity = '1';
-            content.style.pointerEvents = 'auto';
-            canvas.style.zIndex = '5'; // Push canvas behind for clickability
-            revealed = true;
-        }
-
         const rect = canvas.getBoundingClientRect();
         const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
         const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
-        
+
+        // Visual feedback: Sparkles
+        if (Math.random() > 0.8) createSparkle(x, y);
+
+        // Reveal background image slightly as they go
+        if (!revealed) {
+            content.style.opacity = "1";
+            revealed = true;
+        }
+
         ctx.globalCompositeOperation = 'destination-out';
         ctx.beginPath();
-        ctx.arc(x, y, 45, 0, Math.PI * 2);
+        // Smaller brush forces more "work"
+        ctx.arc(x, y, 30, 0, Math.PI * 2);
         ctx.fill();
+
+        checkProgress();
+    }
+
+    function checkProgress() {
+        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        let clearedPixels = 0;
+        // Sample pixels for performance
+        for (let i = 3; i < data.length; i += 1024) {
+            if (data[i] === 0) clearedPixels++;
+        }
+        
+        const totalSampled = (canvas.width * canvas.height) / 256;
+        const progress = clearedPixels / totalSampled;
+
+        // Phase 2: Show the button only after 40% is cleared
+        if (progress > 0.4) {
+            btn.classList.add('btn-ready');
+        }
+
+        // Phase 3: Completely remove canvas after 70% to clean up edges
+        if (progress > 0.7) {
+            canvas.style.opacity = "0";
+            setTimeout(() => canvas.style.display = "none", 500);
+        }
     }
 
     canvas.addEventListener('mousedown', () => isActive = true);
