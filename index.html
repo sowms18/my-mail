@@ -18,9 +18,7 @@
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             display: flex; flex-direction: column; align-items: center; 
             justify-content: center; padding: 20px; box-sizing: border-box; 
-            opacity: 0;
-            transition: opacity 0.8s ease-in; 
-            z-index: 1; /* Sits behind canvas initially */
+            z-index: 1; /* Content starts behind */
         }
 
         .watch-image { 
@@ -32,30 +30,36 @@
         .text-box { text-align: center; color: #1a1a1a; margin-bottom: 25px; }
         .text-box h2 { margin: 0; font-weight: 300; letter-spacing: 3px; text-transform: uppercase; font-size: 1.1rem; }
 
-        /* The Button */
+        /* THE BUTTON - HIGHEST PRIORITY */
         .btn-select { 
             position: relative;
-            z-index: 50; /* Super high z-index to ensure it is clickable */
+            z-index: 999; /* Force to the absolute front */
             padding: 16px 45px; background-color: #000; color: #fff; 
             text-decoration: none; font-weight: 500; border-radius: 0; 
             text-transform: uppercase; font-size: 11px; letter-spacing: 2px;
             display: inline-block;
             cursor: pointer;
+            pointer-events: auto !important; /* Ensure it accepts clicks */
         }
 
         /* The Silver Foil Layer */
-        #scratch-layer { position: absolute; top: 0; left: 0; cursor: crosshair; touch-action: none; z-index: 10; }
+        #scratch-layer { 
+            position: absolute; top: 0; left: 0; 
+            cursor: crosshair; touch-action: none; 
+            z-index: 10; 
+            transition: opacity 0.5s;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="reward-content" class="reveal-content">
+    <div class="reveal-content">
         <img src="image_0.jpg" alt="Longines HydroConquest" class="watch-image">
         <div class="text-box">
             <h2>Your Timepiece</h2>
         </div>
-        <a id="action-btn" href="https://www.longines.com/en-us/p/watch-hydroconquest-l3-841-4-96-6" target="_blank" class="btn-select">SELECT SIZE</a>
+        <a href="https://www.longines.com/en-us/p/watch-hydroconquest-l3-841-4-96-6" target="_blank" class="btn-select">SELECT SIZE</a>
     </div>
 
     <canvas id="scratch-layer" width="360" height="580"></canvas>
@@ -64,10 +68,7 @@
 <script>
     const canvas = document.getElementById('scratch-layer');
     const ctx = canvas.getContext('2d');
-    const reward = document.getElementById('reward-content');
-    const btn = document.getElementById('action-btn');
     let isActive = false;
-    let hasStarted = false;
 
     function setup() {
         ctx.fillStyle = '#D3D3D3'; 
@@ -87,11 +88,6 @@
     function handleScratch(e) {
         if (!isActive) return;
 
-        if (!hasStarted) {
-            hasStarted = true;
-            reward.style.opacity = "1";
-        }
-
         const rect = canvas.getBoundingClientRect();
         const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
         const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
@@ -101,21 +97,21 @@
         ctx.arc(x, y, 40, 0, Math.PI * 2);
         ctx.fill();
 
-        validateScratch();
+        // Check progress
+        checkProgress();
     }
 
-    function validateScratch() {
+    function checkProgress() {
         const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
         let clear = 0;
-        for (let i = 3; i < data.length; i += 800) {
+        for (let i = 3; i < data.length; i += 1000) {
             if (data[i] === 0) clear++;
         }
         
-        // Once 5% is cleared, we move the canvas behind the reward content
-        // so that the button can definitely be clicked.
-        if (clear / ((canvas.width * canvas.height) / 800) > 5) {
-            canvas.style.zIndex = "0"; 
-            reward.style.zIndex = "10";
+        // Once 10% is scratched, we "kill" the scratch layer's ability to block clicks
+        if (clear / ((canvas.width * canvas.height) / 1000) > 10) {
+            canvas.style.pointerEvents = 'none'; // Clicks now "fall through" the silver
+            canvas.style.opacity = '0.4'; // Fade it out slightly to show it's done
         }
     }
 
