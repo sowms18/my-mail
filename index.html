@@ -5,56 +5,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A Special Surprise</title>
     <style>
-        body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f5f5f5; font-family: Arial, sans-serif; }
-        .container { position: relative; width: 360px; height: 580px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden; background-color: #ffffff; }
-        .reveal-content { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
-        .watch-image { width: 100%; max-width: 280px; height: auto; margin-bottom: 20px; }
-        .text-box { text-align: center; color: #1a1a1a; margin-bottom: 20px; }
-        .btn-select { padding: 16px 45px; background-color: #000; color: #fff; text-decoration: none; font-weight: bold; text-transform: uppercase; font-size: 11px; letter-spacing: 2px; cursor: pointer; position: relative; z-index: 999; }
-        #scratch-layer { position: absolute; top: 0; left: 0; cursor: crosshair; touch-action: none; z-index: 10; }
+        body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f5f5f5; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+        
+        .container { 
+            position: relative; width: 360px; height: 580px; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1); border-radius: 4px; 
+            overflow: hidden; background-color: #ffffff; 
+        }
+        
+        .reveal-content { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            display: flex; flex-direction: column; align-items: center; 
+            justify-content: center; padding: 20px; box-sizing: border-box; 
+            z-index: 1;
+        }
+
+        .watch-image { 
+            width: 100%; max-width: 280px; height: auto; 
+            margin-bottom: 25px;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.08));
+        }
+        
+        .text-box { text-align: center; color: #1a1a1a; margin-bottom: 25px; }
+        .text-box h2 { margin: 0; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; font-size: 1.1rem; line-height: 1.4; }
+
+        .btn-select { 
+            position: relative;
+            z-index: 999; 
+            padding: 16px 45px; background-color: #000; color: #fff; 
+            text-decoration: none; font-weight: bold; 
+            text-transform: uppercase; font-size: 11px; letter-spacing: 2px;
+            display: inline-block;
+            cursor: pointer;
+            /* CRITICAL: This stops the button from showing through the silver initially */
+            opacity: 0; 
+            pointer-events: none; 
+            transition: opacity 0.5s ease;
+        }
+
+        #scratch-layer { 
+            position: absolute; top: 0; left: 0; 
+            cursor: crosshair; touch-action: none; 
+            z-index: 10; 
+        }
     </style>
 </head>
 <body>
+
 <div class="container">
     <div class="reveal-content">
-        <img src="image_0.jpg" alt="Watch" class="watch-image">
-        <div class="text-box"><h2>Beyond time</h2></div>
-        <a href="https://www.longines.com/en-us/p/watch-hydroconquest-l3-841-4-96-6" target="_blank" class="btn-select">SELECT SIZE</a>
+        <img src="image_0.jpg" alt="Longines" class="watch-image">
+        <div class="text-box">
+            <h2>To Moments Beyond Time</h2>
+        </div>
+        <a href="https://www.longines.com/en-us/p/watch-hydroconquest-l3-841-4-96-6" target="_blank" class="btn-select" id="order-link">SELECT SIZE</a>
     </div>
     <canvas id="scratch-layer" width="360" height="580"></canvas>
 </div>
+
 <script>
     const canvas = document.getElementById('scratch-layer');
     const ctx = canvas.getContext('2d');
+    const orderLink = document.getElementById('order-link');
     let isActive = false;
+    let hasStarted = false;
 
-    // Fill with silver immediately
-    ctx.fillStyle = '#C0C0C0';
-    ctx.fillRect(0, 0, 360, 580);
+    // Initial Silver Fill
+    ctx.fillStyle = '#C0C0C0'; 
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Add text instructions
-    ctx.fillStyle = '#444';
-    ctx.font = 'bold 16px Arial';
+    // Simple Metal Texture
+    ctx.strokeStyle = '#A8A8A8';
+    for (let i = 0; i < canvas.width; i += 4) {
+        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+    }
+
+    ctx.fillStyle = '#555';
+    ctx.font = 'bold 14px Arial';
     ctx.textAlign = 'center';
     ctx.fillText('SCRATCH TO REVEAL', 180, 290);
 
     function scratch(e) {
         if (!isActive) return;
+
+        // Reveal the button and image once they start scratching
+        if (!hasStarted) {
+            hasStarted = true;
+            orderLink.style.opacity = "1";
+            orderLink.style.pointerEvents = "auto";
+        }
+
         const rect = canvas.getBoundingClientRect();
         const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
-        const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.beginPath();
-        ctx.arc(x, y, 40, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    canvas.addEventListener('mousedown', () => isActive = true);
-    window.addEventListener('mouseup', () => isActive = false);
-    canvas.addEventListener('mousemove', scratch);
-    canvas.addEventListener('touchstart', (e) => { isActive = true; scratch(e); });
-    canvas.addEventListener('touchend', () => isActive = false);
-    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); scratch(e); }, { passive: false });
-</script>
-</body>
-</html>
