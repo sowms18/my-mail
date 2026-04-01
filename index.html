@@ -18,7 +18,7 @@
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             display: flex; flex-direction: column; align-items: center; 
             justify-content: center; padding: 20px; box-sizing: border-box; 
-            z-index: 1; /* Content starts behind */
+            z-index: 1;
         }
 
         .watch-image { 
@@ -30,99 +30,21 @@
         .text-box { text-align: center; color: #1a1a1a; margin-bottom: 25px; }
         .text-box h2 { margin: 0; font-weight: 300; letter-spacing: 3px; text-transform: uppercase; font-size: 1.1rem; }
 
-        /* THE BUTTON - HIGHEST PRIORITY */
+        /* THE BUTTON */
         .btn-select { 
             position: relative;
-            z-index: 999; /* Force to the absolute front */
+            z-index: 999; 
             padding: 16px 45px; background-color: #000; color: #fff; 
             text-decoration: none; font-weight: 500; border-radius: 0; 
             text-transform: uppercase; font-size: 11px; letter-spacing: 2px;
             display: inline-block;
             cursor: pointer;
-            pointer-events: auto !important; /* Ensure it accepts clicks */
+            transition: all 0.4s ease;
+        }
+
+        .btn-active {
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            background-color: #1a1a1a;
         }
 
         /* The Silver Foil Layer */
-        #scratch-layer { 
-            position: absolute; top: 0; left: 0; 
-            cursor: crosshair; touch-action: none; 
-            z-index: 10; 
-            transition: opacity 0.5s;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div class="reveal-content">
-        <img src="image_0.jpg" alt="Longines HydroConquest" class="watch-image">
-        <div class="text-box">
-            <h2>Your Timepiece</h2>
-        </div>
-        <a href="https://www.longines.com/en-us/p/watch-hydroconquest-l3-841-4-96-6" target="_blank" class="btn-select">SELECT SIZE</a>
-    </div>
-
-    <canvas id="scratch-layer" width="360" height="580"></canvas>
-</div>
-
-<script>
-    const canvas = document.getElementById('scratch-layer');
-    const ctx = canvas.getContext('2d');
-    let isActive = false;
-
-    function setup() {
-        ctx.fillStyle = '#D3D3D3'; 
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        ctx.strokeStyle = '#BDBDBD';
-        for (let i = 0; i < canvas.width; i += 3) {
-            ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
-        }
-
-        ctx.fillStyle = '#777';
-        ctx.font = '12px Helvetica';
-        ctx.textAlign = 'center';
-        ctx.fillText('SCRATCH TO REVEAL', 180, 290);
-    }
-
-    function handleScratch(e) {
-        if (!isActive) return;
-
-        const rect = canvas.getBoundingClientRect();
-        const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
-        const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
-
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.beginPath();
-        ctx.arc(x, y, 40, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Check progress
-        checkProgress();
-    }
-
-    function checkProgress() {
-        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-        let clear = 0;
-        for (let i = 3; i < data.length; i += 1000) {
-            if (data[i] === 0) clear++;
-        }
-        
-        // Once 10% is scratched, we "kill" the scratch layer's ability to block clicks
-        if (clear / ((canvas.width * canvas.height) / 1000) > 10) {
-            canvas.style.pointerEvents = 'none'; // Clicks now "fall through" the silver
-            canvas.style.opacity = '0.4'; // Fade it out slightly to show it's done
-        }
-    }
-
-    canvas.addEventListener('mousedown', () => isActive = true);
-    window.addEventListener('mouseup', () => isActive = false);
-    canvas.addEventListener('mousemove', handleScratch);
-    canvas.addEventListener('touchstart', (e) => { isActive = true; handleScratch(e); });
-    canvas.addEventListener('touchend', () => isActive = false);
-    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); handleScratch(e); }, { passive: false });
-
-    setup();
-</script>
-</body>
-</html>
