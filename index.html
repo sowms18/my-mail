@@ -8,19 +8,19 @@
         body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f5f5f5; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
         
         .container { 
-            position: relative; width: 360px; height: 550px; 
+            position: relative; width: 360px; height: 580px; 
             box-shadow: 0 15px 40px rgba(0,0,0,0.1); border-radius: 4px; 
             overflow: hidden; background-color: #ffffff; 
             border: 1px solid #eeeeee; 
         }
         
-        /* The Secret Content (Hidden initially) */
-        .hidden-reveal { 
+        .reveal-content { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             display: flex; flex-direction: column; align-items: center; 
             justify-content: center; padding: 20px; box-sizing: border-box; 
-            opacity: 0; /* Fully invisible at start */
+            opacity: 0;
             transition: opacity 0.8s ease-in; 
+            z-index: 1; /* Sits behind canvas initially */
         }
 
         .watch-image { 
@@ -31,15 +31,16 @@
         
         .text-box { text-align: center; color: #1a1a1a; margin-bottom: 25px; }
         .text-box h2 { margin: 0; font-weight: 300; letter-spacing: 3px; text-transform: uppercase; font-size: 1.1rem; }
-        .text-box p { color: #999; font-size: 0.85rem; margin-top: 8px; letter-spacing: 1px; }
 
-        /* Minimalist Steel Button */
+        /* The Button */
         .btn-select { 
+            position: relative;
+            z-index: 50; /* Super high z-index to ensure it is clickable */
             padding: 16px 45px; background-color: #000; color: #fff; 
             text-decoration: none; font-weight: 500; border-radius: 0; 
             text-transform: uppercase; font-size: 11px; letter-spacing: 2px;
-            pointer-events: none; /* Disabled until scratched */
-            transition: all 0.3s;
+            display: inline-block;
+            cursor: pointer;
         }
 
         /* The Silver Foil Layer */
@@ -49,18 +50,15 @@
 <body>
 
 <div class="container">
-    <div id="reward-content" class="hidden-reveal">
+    <div id="reward-content" class="reveal-content">
         <img src="image_0.jpg" alt="Longines HydroConquest" class="watch-image">
-        
         <div class="text-box">
             <h2>Your Timepiece</h2>
-            <p>Longines HydroConquest Blue Dial</p>
         </div>
-
-        <a id="action-btn" href="https://www.longines.com/en-us/p/watch-hydroconquest-l3-841-4-96-6" class="btn-select" target="_blank">Select Size & Color</a>
+        <a id="action-btn" href="https://www.longines.com/en-us/p/watch-hydroconquest-l3-841-4-96-6" target="_blank" class="btn-select">SELECT SIZE</a>
     </div>
 
-    <canvas id="scratch-layer" width="360" height="550"></canvas>
+    <canvas id="scratch-layer" width="360" height="580"></canvas>
 </div>
 
 <script>
@@ -72,28 +70,23 @@
     let hasStarted = false;
 
     function setup() {
-        // Solid Metallic Silver
         ctx.fillStyle = '#D3D3D3'; 
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Vertical Brushed Steel Texture
         ctx.strokeStyle = '#BDBDBD';
-        ctx.lineWidth = 1;
         for (let i = 0; i < canvas.width; i += 3) {
             ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
         }
 
-        // Instructional Text
         ctx.fillStyle = '#777';
         ctx.font = '12px Helvetica';
         ctx.textAlign = 'center';
-        ctx.fillText('SCRATCH TO REVEAL', 180, 275);
+        ctx.fillText('SCRATCH TO REVEAL', 180, 290);
     }
 
     function handleScratch(e) {
         if (!isActive) return;
 
-        // Reveal background content on first scratch
         if (!hasStarted) {
             hasStarted = true;
             reward.style.opacity = "1";
@@ -105,29 +98,27 @@
 
         ctx.globalCompositeOperation = 'destination-out';
         ctx.beginPath();
-        ctx.arc(x, y, 35, 0, Math.PI * 2);
+        ctx.arc(x, y, 40, 0, Math.PI * 2);
         ctx.fill();
 
-        validateScratchProgress();
+        validateScratch();
     }
 
-    function validateScratchProgress() {
+    function validateScratch() {
         const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
         let clear = 0;
-        // Sample pixels for efficiency
-        for (let i = 3; i < data.length; i += 400) {
+        for (let i = 3; i < data.length; i += 800) {
             if (data[i] === 0) clear++;
         }
         
-        // Once 12% is cleared, activate the button and allow clicks to pass through
-        if (clear / ((canvas.width * canvas.height) / 400) > 12) {
-            canvas.style.pointerEvents = 'none';
-            btn.style.pointerEvents = 'auto';
-            btn.style.opacity = "1";
+        // Once 5% is cleared, we move the canvas behind the reward content
+        // so that the button can definitely be clicked.
+        if (clear / ((canvas.width * canvas.height) / 800) > 5) {
+            canvas.style.zIndex = "0"; 
+            reward.style.zIndex = "10";
         }
     }
 
-    // Event Listeners
     canvas.addEventListener('mousedown', () => isActive = true);
     window.addEventListener('mouseup', () => isActive = false);
     canvas.addEventListener('mousemove', handleScratch);
